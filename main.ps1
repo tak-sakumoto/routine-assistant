@@ -24,7 +24,9 @@ $inbox = $namespace.GetDefaultFolder(6)
 $bodyRegexPattern = $config.pattern.body
 #$subjectRegexPattern = $config.pattern.subject
 
-Set-Content -Path "$outDirPath\file.txt" -Value $null
+$dateStr = Get-Date -Format "yyyyMMddHHmmss"
+$outFilePath = "$outDirPath\file_$dateStr.txt"
+Set-Content -Path $outFilePath -Value $null
 
 foreach ($mail in $inbox.Items) {
     if ($startTime.Trim().Length -ne 0 -and $mail.ReceivedTime -lt $startTime) {
@@ -37,6 +39,6 @@ foreach ($mail in $inbox.Items) {
     $bodyMatches = [regex]::Matches($mail.Body, $bodyRegexPattern)
     if ($bodyMatches) {
         $line = $bodyMatches
-        Add-Content -Path "$outDirPath\file.txt" -Value $line
+        Add-Content -Path $outFilePath -Value $line
     }
 }
