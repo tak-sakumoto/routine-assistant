@@ -35,5 +35,5 @@ $result = @()
 $result = Search-Folder -folder $inbox -outFilePath $outFilePath -regexPatterns $regexPatterns -result $result
 
 # Output the result as a JSON file
-$json = $result | ConvertTo-Json
+$json = $result | ConvertTo-Json -Depth 10
 $json | Out-File -FilePath $outFilePath
