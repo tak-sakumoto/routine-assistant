@@ -24,8 +24,7 @@ $namespace = $outlook.GetNamespace("MAPI")
 $inbox = $namespace.GetDefaultFolder(6)
 
 # Regex patterns
-$bodyRegexPattern = $config.pattern.body
-$subjectRegexPattern = $config.pattern.subject
+$regexPatterns = $config.pattern
 
 $dateStr = Get-Date -Format "yyyyMMddHHmmss"
 $outFilePath = "$outDirPath\file_$dateStr.json"
@@ -33,7 +32,7 @@ Set-Content -Path $outFilePath -Value $null
 
 # Recursively search for mails in folders
 $result = @()
-$result = Search-Folder -folder $inbox -outFilePath $outFilePath -subjectRegexPattern $subjectRegexPattern -bodyRegexPattern $bodyRegexPattern -result $result　
+$result = Search-Folder -folder $inbox -outFilePath $outFilePath -regexPatterns $regexPatterns -result $result
 
 # Output the result as a JSON file
 $json = $result | ConvertTo-Json
