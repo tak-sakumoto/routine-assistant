@@ -6,6 +6,9 @@ param (
     [string]$endTime = ""
 )
 
+# Dot sourcing
+. .\search_folder.ps1
+
 # Read the config file
 $config = Get-Content -Path $jsonPath | ConvertFrom-Json
 
@@ -28,17 +31,5 @@ $dateStr = Get-Date -Format "yyyyMMddHHmmss"
 $outFilePath = "$outDirPath\file_$dateStr.txt"
 Set-Content -Path $outFilePath -Value $null
 
-foreach ($mail in $inbox.Items) {
-    if ($startTime.Trim().Length -ne 0 -and $mail.ReceivedTime -lt $startTime) {
-        continue
-    }
-    if ($endTime.Trim().Length -ne 0 -and $mail.ReceivedTime -gt $endTime) {
-        continue
-    }
-
-    $bodyMatches = [regex]::Matches($mail.Body, $bodyRegexPattern)
-    if ($bodyMatches) {
-        $line = $bodyMatches
-        Add-Content -Path $outFilePath -Value $line
-    }
-}
+# Recursively search for mails in folders
+Search-Folder -folder $inbox -outFilePath $outFilePath -bodyRegexPattern $bodyRegexPattern
