@@ -6,6 +6,9 @@ param (
     [string]$endTime = ""
 )
 
+# Dot sourcing
+. .\search_folder.ps1
+
 # Read the config file
 $config = Get-Content -Path $jsonPath | ConvertFrom-Json
 
@@ -21,22 +24,16 @@ $namespace = $outlook.GetNamespace("MAPI")
 $inbox = $namespace.GetDefaultFolder(6)
 
 # Regex patterns
-$bodyRegexPattern = $config.pattern.body
-#$subjectRegexPattern = $config.pattern.subject
+$regexPatterns = $config.pattern
 
-Set-Content -Path "$outDirPath\file.txt" -Value $null
+$dateStr = Get-Date -Format "yyyyMMddHHmmss"
+$outFilePath = "$outDirPath\file_$dateStr.json"
+Set-Content -Path $outFilePath -Value $null
 
-foreach ($mail in $inbox.Items) {
-    if ($startTime.Trim().Length -ne 0 -and $mail.ReceivedTime -lt $startTime) {
-        continue
-    }
-    if ($endTime.Trim().Length -ne 0 -and $mail.ReceivedTime -gt $endTime) {
-        continue
-    }
+# Recursively search for mails in folders
+$result = @()
+$result = Search-Folder -folder $inbox -outFilePath $outFilePath -regexPatterns $regexPatterns -result $result
 
-    $bodyMatches = [regex]::Matches($mail.Body, $bodyRegexPattern)
-    if ($bodyMatches) {
-        $line = $bodyMatches
-        Add-Content -Path "$outDirPath\file.txt" -Value $line
-    }
-}
+# Output the result as a JSON file
+$json = $result | ConvertTo-Json -Depth 10
+$json | Out-File -FilePath $outFilePath

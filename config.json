@@ -1,7 +1,12 @@
 {
-    "pattern":
+    "pattern": [
+        {
+            "subject": "",
+            "body": ""
+        },
         {
             "subject": "",
             "body": ""
         }
+    ]
 }
