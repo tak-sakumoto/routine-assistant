@@ -2,6 +2,7 @@ function Search-Folder {
     param (
         $folder,
         [string]$outFilePath,
+        [string]$subjectRegexPattern,
         [string]$bodyRegexPattern,
         $result
     )
@@ -15,11 +16,13 @@ function Search-Folder {
             continue
         }
 
-        # Match the email by the given regular expression
+        # Match the email by the given regular expressions
+        $subjectMatches = [regex]::Matches($mail.Subject, $subjectRegexPattern)
         $bodyMatches = [regex]::Matches($mail.Body, $bodyRegexPattern)
-        if ($bodyMatches) {
+        if ($subjectMatches -and $bodyMatches) {
             $result += @{
                 "ReceivedTime" = $mail.ReceivedTime
+                "Subject" = $subjectMatches
                 "Body" = $bodyMatches
             }
         }
@@ -27,7 +30,7 @@ function Search-Folder {
 
     # Recursively search for mails in subfolders
     foreach ($subFolder in $folder.Folders) {
-        Search-Folder -folder $subFolder -outFilePath $outFilePath -bodyRegexPattern $bodyRegexPattern -result $result
+        Search-Folder -folder $subFolder -outFilePath $outFilePath -subjectRegexPattern $subjectRegexPattern -bodyRegexPattern $bodyRegexPattern -result $result
     }
 
     return $result
