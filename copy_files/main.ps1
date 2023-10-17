@@ -33,24 +33,30 @@ foreach ($var in $requiredVars) {
     }
 }
 
-# Make a foloder to save output files
-New-Item -Path $destFolder -ItemType Directory -Force
-$destFolder = Convert-Path $destFolder
+try {
+    # Make a foloder to save output files
+    New-Item -Path $destFolder -ItemType Directory -Force
+    $destFolder = Convert-Path $destFolder -ErrorAction Stop
+    
+    # Searche for files in the target folder based on the specified depth and search string
+    $searchFolder = Convert-Path $searchFolder -ErrorAction Stop
+    $files = Get-ChildItem -Path $searchFolder -Recurse -Depth $depth | Where-Object { $_.Name -like "*$($searchString)*" }
 
-# Searche for files in the target folder based on the specified depth and search string
-$searchFolder = Convert-Path $searchFolder
-$files = Get-ChildItem -Path $searchFolder -Recurse -Depth $depth | Where-Object { $_.Name -like "*$($searchString)*" }
-
-# Copy the found files to the destination folder
-$fileCopied = @{}
-foreach ($file in $files | Sort-Object CreationTime) {
-    # If multiple files with the same name exist, do not copy all but the oldest file
-    if ($fileCopied.ContainsKey($file.Name)) {
-        Write-Warning "Multiple files with the same name exist: $($file.FullName)"
-        continue
+    # Copy the found files to the destination folder
+    $fileCopied = @{}
+    foreach ($file in $files | Sort-Object CreationTime) {
+        # If multiple files with the same name exist, do not copy all but the oldest file
+        if ($fileCopied.ContainsKey($file.Name)) {
+            Write-Warning "Multiple files with the same name exist: $($file.FullName)"
+            continue
+        }
+        Copy-Item -Path $file.FullName -Destination $destFolder -Recurse
+        $fileCopied[$file.Name] = $true
     }
-    Copy-Item -Path $file.FullName -Destination $destFolder -Recurse
-    $fileCopied[$file.Name] = $true
+}
+catch {
+    Write-Host $($_.Exception.Message)
+    exit 1
 }
 
 Write-Host "Done."
