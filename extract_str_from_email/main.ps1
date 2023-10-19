@@ -9,31 +9,46 @@ param (
 # Dot sourcing
 . .\search_folder.ps1
 
-# Read the config file
-$config = Get-Content -Path $jsonPath | ConvertFrom-Json
+# Exit as error if no config file
+if (-not $jsonPath) {
+    Write-Host "Error: Required JSON config is missing."
+    exit 1
+}
 
-# Make a foloder to save output files
-New-Item -Path $outDirPath -ItemType Directory -Force
-$outDirPath = Convert-Path $outDirPath
+try {
+    # Read the config file
+    $config = Get-Content -Path $jsonPath | ConvertFrom-Json
 
-# Get an Outlook object
-$outlook = New-Object -ComObject Outlook.Application
-$namespace = $outlook.GetNamespace("MAPI")
+    # Make a foloder to save output files
+    New-Item -Path $outDirPath -ItemType Directory -Force
+    $outDirPath = Convert-Path $outDirPath
 
-# Get the inbox
-$inbox = $namespace.GetDefaultFolder(6)
+    # Get an Outlook object
+    $outlook = New-Object -ComObject Outlook.Application
+    $namespace = $outlook.GetNamespace("MAPI")
 
-# Regex patterns
-$regexPatterns = $config.pattern
+    # Get the inbox
+    $inbox = $namespace.GetDefaultFolder(6)
 
-$dateStr = Get-Date -Format "yyyyMMddHHmmss"
-$outFilePath = "$outDirPath\file_$dateStr.json"
-Set-Content -Path $outFilePath -Value $null
+    # Regex patterns
+    $regexPatterns = $config.pattern
 
-# Recursively search for mails in folders
-$result = @()
-$result = Search-Folder -folder $inbox -outFilePath $outFilePath -regexPatterns $regexPatterns -result $result
+    $dateStr = Get-Date -Format "yyyyMMddHHmmss"
+    $outFilePath = "$outDirPath\file_$dateStr.json"
+    Set-Content -Path $outFilePath -Value $null
 
-# Output the result as a JSON file
-$json = $result | ConvertTo-Json -Depth 10
-$json | Out-File -FilePath $outFilePath
+    # Recursively search for mails in folders
+    $result = @()
+    $result = Search-Folder -folder $inbox -outFilePath $outFilePath -regexPatterns $regexPatterns -result $result
+
+    # Output the result as a JSON file
+    $json = $result | ConvertTo-Json -Depth 10
+    $json | Out-File -FilePath $outFilePath
+}
+catch {
+    Write-Host $($_.Exception.Message)
+    exit 1
+}
+
+Write-Host "Done."
+exit 0
