@@ -9,6 +9,12 @@ param (
 # Dot sourcing
 . .\search_folder.ps1
 
+# Exit as error if no config file
+if (-not $jsonPath) {
+    Write-Host "Error: Required JSON config is missing."
+    exit 1
+}
+
 # Read the config file
 $config = Get-Content -Path $jsonPath | ConvertFrom-Json
 
