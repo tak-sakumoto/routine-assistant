@@ -7,6 +7,9 @@ param (
     [string]$searchString
 )
 
+# Dot sourcing
+. .\copy_item_without_duplicates.ps1
+
 # Read the config file
 if ($jsonPath) {
     $config = Get-Content -Path $jsonPath | ConvertFrom-Json
@@ -43,16 +46,7 @@ try {
     $files = Get-ChildItem -Path $searchFolder -Recurse -Depth $depth | Where-Object { $_.Name -like "*$($searchString)*" }
 
     # Copy the found files to the destination folder
-    $fileCopied = @{}
-    foreach ($file in $files | Sort-Object CreationTime) {
-        # If multiple files with the same name exist, do not copy all but the oldest file
-        if ($fileCopied.ContainsKey($file.Name)) {
-            Write-Warning "Multiple files with the same name exist: $($file.FullName)"
-            continue
-        }
-        Copy-Item -Path $file.FullName -Destination $destFolder -Recurse
-        $fileCopied[$file.Name] = $true
-    }
+    Copy-ItemsWithoutDuplicates -destFolder $destFolder -files $files
 }
 catch {
     Write-Host $($_.Exception.Message)
