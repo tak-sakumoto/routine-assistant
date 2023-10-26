@@ -12,4 +12,10 @@ document.getElementById('myForm').addEventListener('submit', function(e) {
             document.getElementById('displayText').innerHTML += "checkbox_" + i + ": " + "checked" + "<br>";
         }
     }
+    for (var i = 0; i < 3; i++) {
+        var radio = document.getElementById('radio_' + i);
+        if (radio.checked) {
+            document.getElementById('displayText').innerHTML += "radio_" + i + ": " + "checked" + "<br>";
+        }
+    }
   });
