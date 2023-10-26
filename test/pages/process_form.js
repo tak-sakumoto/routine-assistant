@@ -6,4 +6,10 @@ document.getElementById('myForm').addEventListener('submit', function(e) {
         var text = document.getElementById('text_' + i).value;
         document.getElementById('displayText').innerHTML += "text_" + i + ": " + text + "<br>";
     }
+    for (var i = 0; i < 3; i++) {
+        var checkbox = document.getElementById('checkbox_' + i);
+        if (checkbox.checked) {
+            document.getElementById('displayText').innerHTML += "checkbox_" + i + ": " + "checked" + "<br>";
+        }
+    }
   });
