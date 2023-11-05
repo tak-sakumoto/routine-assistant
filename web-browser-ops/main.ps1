@@ -1,14 +1,42 @@
 # Arguments
 param (
-    [string]$url
+    $csvPath,
+    $sleepSec=1
 )
 
-if (-not $url) {
-    Write-Host "Error: URL is not set"
+# Dot sourcing
+. .\Get-HashTableFromStr.ps1
+
+# Error if the path to the CSV file is not specified
+if (-not $csvPath) {
+    Write-Host "Error: CSV path is not set"
     exit 1
 }
 
+# Launch the browser
 $driver = Start-SeNewEdge
-Enter-SeUrl -Url $url -Driver $driver
+
+# Import CSV a file
+$csvData = Import-Csv -Path $csvPath
+
+# Process CSV files one row at a time
+foreach ($line in $csvData) {
+    # Get command type
+    $command = $line.command
+    # Get command arguments
+    $argTable = Get-HashTableFromStr -str $line.args
+
+    # Process according to the type of command
+    switch ($command) {
+        # Navigate to a URL
+        "url" {
+            Enter-SeUrl -Driver $driver -Url $argTable["Url"]
+        }
+        Default {}
+    }
+
+    # Sleep
+    Start-Sleep -Seconds $sleepSec
+}
 
 exit 0
