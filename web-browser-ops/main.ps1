@@ -32,6 +32,11 @@ foreach ($line in $csvData) {
         "url" {
             Enter-SeUrl -Driver $driver -Url $argTable["Url"]
         }
+        # Click on an Element/Button
+        "click" {
+            $element = Find-SeElement -Driver $driver -Id $argTable["Id"]
+            Invoke-SeClick -Element $element
+        }
         Default {}
     }
 
